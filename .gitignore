@@ -1,0 +1,26 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+node_modules/
+dist/
+build/
+mlflow.db
+mlruns/
+tmp/
+tmp_*
+*.log
+nul
+.vscode/
+app/backend/tmp_history/
+tmp_files/
+tmp_history/
+*.pptx
+*.xlsx
+# local duckdb binary can be rebuilt from seed CSVs
+data/warehouse/*.duckdb
+data/warehouse/*.duckdb.wal

@@ -1,0 +1,793 @@
+:root {
+  --ink: #10233d;
+  --ink-soft: #3b4d66;
+  --muted: #7a8799;
+  --line: #e6ebf2;
+  --line-strong: #d7e0ec;
+  --bg: #f5f7fb;
+  --panel: #ffffff;
+  --sidebar: #f8fafc;
+  --sidebar-hover: #eef3f9;
+  --sidebar-active: #e5eef9;
+  --brand: #0b5cab;
+  --brand-deep: #0a3d73;
+  --brand-soft: #e8f1fb;
+  --accent: #1282a6;
+  --shadow-sm: 0 1px 2px rgba(16, 35, 61, 0.04);
+  --shadow: 0 10px 28px rgba(16, 35, 61, 0.07);
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --sidebar-w: 272px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, textarea { font: inherit; }
+button {
+  cursor: pointer;
+  transition: background-color 160ms var(--ease), border-color 160ms var(--ease),
+    color 160ms var(--ease), transform 120ms var(--ease), box-shadow 160ms var(--ease),
+    opacity 160ms var(--ease);
+}
+button:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+button:disabled { cursor: not-allowed; }
+.muted { color: var(--muted); font-size: 12px; }
+
+.app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 500px at 80% -10%, rgba(18, 130, 166, 0.08), transparent 55%),
+    radial-gradient(900px 400px at 10% 0%, rgba(11, 92, 171, 0.06), transparent 50%),
+    var(--bg);
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex: 0 0 var(--sidebar-w);
+  min-width: 0;
+  background: linear-gradient(180deg, #fbfcfe 0%, var(--sidebar) 100%);
+  border-right: 1px solid var(--line);
+  color: var(--ink);
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  transition: flex-basis 220ms var(--ease), width 220ms var(--ease),
+    opacity 180ms var(--ease), padding 220ms var(--ease), border-color 220ms var(--ease);
+}
+.app-shell.sidebar-collapsed .sidebar {
+  width: 0;
+  flex-basis: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-right-color: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 4px 4px;
+}
+.sidebar-brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.brand-link {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.brand-link:hover .sidebar-title,
+.brand-link:hover.topbar-brand {
+  color: var(--brand);
+}
+.topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: -0.01em;
+  color: var(--brand-deep);
+  white-space: nowrap;
+}
+.sidebar-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.session-empty {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 10px 8px;
+}
+.session-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.session-item:hover {
+  background: var(--sidebar-hover);
+  color: var(--ink);
+}
+.session-item.active {
+  background: var(--sidebar-active);
+  border-color: #d5e4f7;
+  color: var(--brand-deep);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+.session-open {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 8px 4px 8px 10px;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+}
+.session-title {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Radix ScrollArea wraps children in `display: table; min-width: 100%`,
+   which lets wide content (long session titles) grow past the sidebar instead
+   of truncating. Force block layout so the ellipsis above actually applies. */
+[data-radix-scroll-area-viewport] > * {
+  display: block !important;
+}
+.session-more {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  margin-right: 4px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  opacity: 0;
+  cursor: pointer;
+}
+.session-item:hover .session-more,
+.session-more[data-state="open"],
+.session-more:focus-visible {
+  opacity: 1;
+}
+.session-more:hover {
+  background: #ffffff;
+  color: var(--ink);
+}
+.session-group-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 8px 4px;
+}
+.sidebar-bottom {
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+.sidebar-bottom .user-chip {
+  width: 100%;
+  justify-content: flex-start;
+}
+.topbar-user {
+  display: none;
+}
+.app-shell.sidebar-collapsed .topbar-user {
+  display: block;
+}
+.sidebar .primary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #cfe0f5;
+  border-radius: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f8ff 100%);
+  color: var(--brand-deep);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: var(--shadow-sm);
+}
+.sidebar .primary:hover {
+  background: linear-gradient(180deg, #f8fbff 0%, #eaf2fc 100%);
+  border-color: #b7d0ef;
+}
+
+.main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-rows: 60px 1fr;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px 0 14px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(230, 235, 242, 0.9);
+}
+.top-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  color: var(--brand-deep);
+  letter-spacing: -0.01em;
+}
+.topbar-logo {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+.user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px 5px 5px;
+  box-shadow: var(--shadow-sm);
+}
+.user-chip .user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.user-chip .user-name {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink);
+}
+/* user chip doubles as a shadcn DropdownMenu trigger (button element) */
+button.user-chip { color: inherit; }
+button.user-chip:hover { border-color: var(--line-strong); }
+button.user-chip[data-state="open"] {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.stage { min-height: 0; display: flex; flex-direction: column; }
+.stage.welcome { align-items: center; justify-content: center; padding: 28px 20px; }
+.stage.chatting { display: grid; grid-template-rows: 1fr auto; }
+
+.welcome-panel {
+  width: min(760px, 100%);
+  text-align: center;
+  animation: rise 320ms var(--ease);
+}
+.welcome-logo {
+  height: 72px;
+  width: auto;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 6px 16px rgba(11, 92, 171, 0.12));
+}
+.welcome-panel h1 {
+  margin: 0 0 8px;
+  font-size: clamp(28px, 4vw, 36px);
+  letter-spacing: -0.035em;
+  color: var(--brand-deep);
+  font-weight: 750;
+}
+.welcome-panel p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 15px;
+}
+.starter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.starter {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-md);
+  padding: 14px 15px;
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+  min-height: 64px;
+}
+.starter:hover {
+  border-color: #bfd4ef;
+  background: #f8fbff;
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.starter:disabled { opacity: 0.55; }
+
+.row {
+  display: flex;
+  width: min(820px, 100%);
+  margin: 0 auto 14px;
+  animation: rise 220ms var(--ease);
+}
+.row.user { justify-content: flex-end; }
+.row.assistant { justify-content: flex-start; }
+.bubble {
+  max-width: min(720px, 100%);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  line-height: 1.55;
+  box-shadow: var(--shadow-sm);
+}
+.bubble.user {
+  background: linear-gradient(145deg, var(--brand) 0%, #0d6fbf 100%);
+  color: white;
+  border-bottom-right-radius: 8px;
+}
+.bubble.assistant {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 8px;
+}
+.bubble p { margin: 0 0 0.7em; }
+.bubble p:last-child { margin-bottom: 0; }
+
+/* .sources / .chip / .table-wrap moved to Tailwind utilities (SourcesBar,
+   DataTableCard). .md-table-wrap stays for AnswerBody markdown tables. */
+.md-table-wrap {
+  margin: 10px 0 14px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fcfdff;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eef2f6; }
+th { color: var(--muted); font-weight: 600; }
+.bubble .md-table-wrap table { margin: 0; }
+.download-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+.download-row button.download-btn,
+.download-row a {
+  border: 1px solid #cfe0f5;
+  background: linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%);
+  color: var(--brand-deep);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+.download-row button.download-btn:hover,
+.download-row a:hover {
+  background: #eaf2ff;
+  border-color: #a8c8e8;
+}
+.cite-chip {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 3px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.45;
+  vertical-align: baseline;
+  text-decoration: none;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  background: #f4f7fb;
+  color: #3b5678;
+  font-family: inherit;
+}
+.cite-chip.cite-internal {
+  background: #eef8f0;
+  color: #2f6f3a;
+  border-color: #d5ebd9;
+}
+.cite-chip.cite-num {
+  background: #eef4ff;
+  color: #1d4f91;
+  font-size: 10px;
+  padding: 0 4px;
+}
+.cite-chip.cite-web {
+  background: #f4f7fb;
+  color: #3b5678;
+  border-color: #e1e8f1;
+  font-weight: 600;
+}
+.cite-chip.cite-web:hover,
+.cite-chip.cite-cluster:hover {
+  background: #eaf1fb;
+  border-color: #c9d8ec;
+  color: #1d4f91;
+}
+.cite-chip.cite-cluster {
+  border-color: #e1e8f1;
+  font-variant-numeric: tabular-nums;
+}
+/* SourcesBar popover + chips moved to Tailwind utilities. */
+.user-text { white-space: pre-wrap; }
+
+.download-row a {
+  text-decoration: none;
+  color: white;
+  background: var(--brand-deep);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.composer { width: min(820px, 100%); margin: 0 auto; }
+.composer-center { margin-top: 4px; }
+.composer-bottom {
+  width: 100%;
+  padding: 10px 20px 16px;
+  background: linear-gradient(180deg, rgba(245, 247, 251, 0), var(--bg) 34%);
+}
+.composer-bottom .composer-shell,
+.composer-center .composer-shell { width: min(820px, 100%); margin: 0 auto; }
+.composer-shell {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--line-strong);
+  border-radius: 24px;
+  padding: 10px 10px 10px 16px;
+  box-shadow: var(--shadow);
+}
+.composer-shell:focus-within {
+  border-color: #9fc0e8;
+  box-shadow: 0 0 0 4px rgba(11, 92, 171, 0.08), var(--shadow);
+}
+.composer textarea {
+  flex: 1;
+  resize: none;
+  border: 0;
+  outline: none;
+  min-height: 24px;
+  max-height: 160px;
+  padding: 8px 0;
+  background: transparent;
+  color: var(--ink);
+}
+.composer .composer-export {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #f4f7fb;
+  color: var(--muted);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.composer .composer-export:hover:not(:disabled) {
+  background: var(--brand-soft);
+  border-color: #9fc0e8;
+  color: var(--brand);
+}
+.composer .composer-export:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.composer button[type="submit"],
+.composer button.composer-stop {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--brand) 0%, var(--accent) 100%);
+  color: white;
+  font-size: 18px;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(11, 92, 171, 0.22);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.composer button.composer-stop {
+  background: linear-gradient(145deg, #b42318 0%, #f04438 100%);
+  font-size: 14px;
+  box-shadow: 0 6px 14px rgba(180, 35, 24, 0.22);
+}
+.composer button[type="submit"]:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
+.composer-hint {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.ghost {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.ghost:hover { background: rgba(16, 35, 61, 0.06); color: var(--ink); }
+.ghost:active:not(:disabled) { background: rgba(16, 35, 61, 0.1); }
+.ghost.dark { color: var(--ink-soft); }
+
+.thinking {
+  width: min(820px, 100%);
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+/* thinking-dots removed with the Skeleton task; pulse keyframes moved to
+   shadcn.css as `dot-pulse` (Tailwind also ships same-named `pulse`). */
+
+.status {
+  width: min(820px, 100%);
+  margin: 0 auto 12px;
+  color: #9b2c2c;
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    z-index: 30;
+    height: 100vh;
+    box-shadow: var(--shadow);
+  }
+  .app-shell.sidebar-collapsed .sidebar { transform: translateX(-105%); }
+  .starter-grid { grid-template-columns: 1fr; }
+  .welcome-panel h1 { font-size: 28px; }
+  .user-chip .user-meta .muted { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ---- a11y helpers ---- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* tool-timeline / tool-card / tool-debug / debug-timing-table moved to
+   Tailwind utilities (ChatElements.tsx). */
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.debug-toggle {
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.debug-toggle.on {
+  background: var(--brand-soft);
+  border-color: #9dbde0;
+  color: var(--brand-deep);
+}
+/* table-card / chart-card chrome moved to Tailwind utilities (DataTableCard,
+   ChartCard). The two keyframes below stay — converted components reference
+   them via arbitrary animate-[...] utilities. */
+@keyframes chart-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+/* Soft mount so a chart landing at its [[CHART:n]] slot mid-stream reads as
+   intentional, not as a hard reflow of the answer text. */
+@keyframes chart-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.number-ticker {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  color: var(--brand-deep);
+}
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.kpi-card {
+  border: 1px solid #d7e6f8;
+  background: linear-gradient(180deg, #f5f9ff 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.kpi-value {
+  font-size: 20px;
+  font-weight: 750;
+  color: var(--brand-deep);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.kpi-suffix { font-size: 14px; color: var(--accent); }
+.kpi-label {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ---- Copy button (now Tailwind utilities in ChatElements; kept: the
+      position:relative anchor its absolute placement needs) ---- */
+.bubble.assistant { position: relative; }
+
+/* ---- Followup suggestion chips (quiet, secondary) ---- */
+.followup-row {
+  width: min(820px, 100%);
+  margin: 2px auto 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  animation: rise 220ms var(--ease);
+}
+.followup-chip {
+  border: 1px solid #e6ebf2;
+  background: #fbfcfe;
+  color: #5b6b80;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: none;
+}
+.followup-chip:hover {
+  background: #f3f6fa;
+  border-color: #d7e0ec;
+  color: #3f536d;
+  box-shadow: none;
+}
+.followup-chip:disabled { opacity: 0.5; }
+/* sources-quiet / chip-quiet / chip-link moved to Tailwind utilities
+   (SourcesBar). chip-zeap was already dead code. */
+
+/* ---- Scroll to bottom FAB ---- */
+.scroll-bottom-fab {
+  position: sticky;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: rgba(255,255,255,0.95);
+  color: var(--ink-soft);
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  z-index: 10;
+  animation: rise 180ms var(--ease);
+}
+.scroll-bottom-fab:hover { background: var(--brand-soft); color: var(--brand-deep); }
+
+/* ---- Dismissible status ---- */
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.status span { flex: 1; }
+.status-info {
+  color: #1d4f91;
+  background: #eef5ff;
+  border: 1px solid #c7dcfa;
+}
+.status-info .status-dismiss { color: #1d4f91; }
+.status-dismiss {
+  border: none;
+  background: none;
+  color: #9b2c2c;
+  font-size: 14px;
+  padding: 2px 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* progress-timeline / progress-chip moved to Tailwind utilities
+   (ChatElements). */
+.bubble.assistant .answer-streaming::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  background: var(--brand);
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+.bubble.assistant.draft-waiting {
+  min-height: 88px;
+  width: 100%;
+  max-width: 100%;
+  border-style: dashed;
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+
+/* response-timing / empty-answer moved to Tailwind utilities (ChatElements). */

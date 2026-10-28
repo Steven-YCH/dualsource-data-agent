@@ -1,0 +1,6 @@
+# Local_react harness (default = langchain). Install alongside requirements.txt.
+# ReAct Serving packages the same pins via agent/serving/deploy_react_agent.py.
+langchain==1.4.5
+langchain-core==1.6.10
+langgraph==1.2.15
+langsmith==0.14.8
