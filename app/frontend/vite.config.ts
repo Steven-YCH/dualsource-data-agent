@@ -13,7 +13,9 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: "0.0.0.0",
     port: 5173,
+    strictPort: true,
     proxy: {
       // Long-lived SSE for /api/chat/stream — avoid proxy timeouts blanking the UI.
       "/api": {
