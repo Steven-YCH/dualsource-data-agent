@@ -1,14 +1,9 @@
-"""Runtime facts for DualSource local ReAct.
-
-Portfolio seed data covers 2024-01 .. 2025-12, so "today" is clamped to that horizon
-instead of the real calendar (which would invent empty 2026 YTD windows).
-"""
+"""Runtime facts for DualSource local ReAct (seed-clamped)."""
 from __future__ import annotations
 
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
 
-# Last month present in data/seed CSVs.
 SEED_LAST_COMPLETE_MONTH = date(2025, 12, 1)
 
 
@@ -17,7 +12,6 @@ def hk_today() -> date:
         real = datetime.now(ZoneInfo("Asia/Hong_Kong")).date()
     except Exception:
         real = date.today()
-    # Keep demos inside the seeded warehouse horizon.
     return min(real, date(2026, 1, 15))
 
 
@@ -79,30 +73,27 @@ def build_runtime_facts(today: date | None = None) -> dict[str, str]:
 
 def runtime_facts_text(today: date | None = None) -> str:
     f = build_runtime_facts(today)
-    return (
-        "RUNTIME FACTS (must obey):
-"
-        f"- Demo warehouse seed horizon: {f['seed_horizon']}
-"
-        f"- Effective today for planning: {f['today']}
-"
-        f"- Current analysis year: {f['current_year']}
-"
-        f"- YTD = January through the last complete seeded month "
-        f"({f['ytd_window']}; last complete month = {f['last_complete_month']}).
-"
-        "- Do not query months after the seed horizon; there is no 2026 internal data.
-"
-        f"- For YTD {f['current_year']} SQL use year_month >= TIMESTAMP '{f['ytd_sql_start']}' "
-        f"AND year_month < TIMESTAMP '{f['ytd_sql_end_exclusive']}'. "
-        f"Expect about {f['expected_ytd_months']} monthly rows.
-"
-        f"- First half / H1 means {f['h1_window']} "
-        f"(SQL: year_month >= TIMESTAMP '{f['h1_sql_start']}' "
-        f"AND year_month < TIMESTAMP '{f['h1_sql_end_exclusive']}').
-"
-        "- If the user names no year, use the current analysis year above.
-"
-        "- Cargo units: tonnes or million tonnes (never bare 't').
-"
-    )
+    lines = [
+        "RUNTIME FACTS (must obey):",
+        f"- Demo warehouse seed horizon: {f['seed_horizon']}",
+        f"- Effective today for planning: {f['today']}",
+        f"- Current analysis year: {f['current_year']}",
+        (
+            f"- YTD = January through the last complete seeded month "
+            f"({f['ytd_window']}; last complete month = {f['last_complete_month']})."
+        ),
+        "- Do not query months after the seed horizon; there is no 2026 internal data.",
+        (
+            f"- For YTD {f['current_year']} SQL use year_month >= TIMESTAMP '{f['ytd_sql_start']}' "
+            f"AND year_month < TIMESTAMP '{f['ytd_sql_end_exclusive']}'. "
+            f"Expect about {f['expected_ytd_months']} monthly rows."
+        ),
+        (
+            f"- First half / H1 means {f['h1_window']} "
+            f"(SQL: year_month >= TIMESTAMP '{f['h1_sql_start']}' "
+            f"AND year_month < TIMESTAMP '{f['h1_sql_end_exclusive']}')."
+        ),
+        "- If the user names no year, use the current analysis year above.",
+        "- Cargo units: tonnes or million tonnes (never bare 't').",
+    ]
+    return "\n".join(lines) + "\n"
